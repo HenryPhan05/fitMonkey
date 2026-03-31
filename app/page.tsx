@@ -13,7 +13,7 @@ export default function Home() {
       <div>
         <Image 
           src="/images/shapes/background.png" 
-          alt="Gradient Background" 
+          alt="Background Gradient" 
           fill
           className="object-cover object-center"
         />
@@ -76,7 +76,6 @@ export default function Home() {
         {/* Navbar */}
         <nav className="flex justify-between items-center mb-16">
           <div className="flex items-center gap-3">
-            {/* Your actual logo */}
             <div className="w-14 h-14 relative">
               <Image 
                 src="/images/branding/fitMONKEYLogo.png" 
@@ -99,11 +98,12 @@ export default function Home() {
           </div>
 
           {/* User Profile */}
-          <div className="flex items-center gap-8">
-            <div className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer transition-all">
-              <CircleUserRound className="w-10 h-10"/>
-            </div>
-          </div>
+          <Link
+            href="/signin"
+            className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer transition-all"
+          >
+            <CircleUserRound className="w-10 h-10" />
+          </Link>
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -121,14 +121,15 @@ export default function Home() {
             </p>
 
             <div className="flex items-center gap-4">
-              <button 
+              {/* Get Started */}
+              <Link 
+                href="/signup"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 className="px-10 py-4 bg-black hover:bg-zinc-900 text-white font-semibold text-lg rounded-4xl transition-all active:scale-95 flex items-center gap-3 group"
               >
-                Get started
-                <span className={`inline-block transition-transform ${isHovered ? 'translate-x-1' : ''}`}></span>
-              </button>
+              Get started
+              </Link>
             </div>
           </div>
 
