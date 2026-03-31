@@ -10,6 +10,15 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#a8cd00] via-[#A26A00] to-[#9D7C00] text-white overflow-hidden relative">
       {/* Background Decorative Fitness Elements */}
+      {/* Backdrop */}
+      <div className= "absolute top right-[5%]">
+        <Image 
+          src="/images/shapes/backdrop.png" 
+          alt="Backdrop" 
+          width={650}
+          height={900}
+        />
+      </div>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Punching Bag */}
         <div className="absolute top-0 right-[7%] opacity-40">
@@ -34,18 +43,17 @@ function LandingPage() {
         </div>
 
         {/* Barbell */}
-        <div className="absolute top-[15%] right-[-4%] opacity-90">
+        <div className="absolute top-[15%] right-[-4%]">
           <Image 
             src="/images/equipments/barbell.png" 
             alt="Barbell" 
             width={900} 
             height={700}
-            className="drop-shadow-2xl"
           />
         </div>
 
         {/* Bananas */}
-        <div className="absolute bottom-[-10] right-13 opacity-95">
+        <div className="absolute bottom-[-10] right-13">
           <Image 
             src="/images/foods/bananas.png" 
             alt="Bananas" 
