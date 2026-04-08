@@ -116,7 +116,7 @@ export default function Home() {
 
             <p className="text-xl text-white/90 max-w-lg">
               Track every rep, crush every goal, and turn consistency into your super power.
-              Whether you're a gym beast, a home workout warrior, or just starting your fitness journey,
+              Whether youre a gym beast, a home workout warrior, or just starting your fitness journey,
               fitMONKEY makes it fun, simple and engaging to keep track of your journey.
             </p>
 
