@@ -5,9 +5,9 @@ import { Home, Dumbbell, Apple, Users, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/utils/supabase';
 export default function Sidebar() {
-  // State lưu tên mục hiện tại
+
   const pathname = usePathname();
-  // Danh sách menu
+
   const menuItems = [
     { name: "MY HOME", icon: <Home size={18} />, path: "/homepage" },
     { name: "WORKOUTS", icon: <Dumbbell size={18} />, path: "/workout" },
