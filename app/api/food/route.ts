@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchFoo, Food } from "@/lib/api/food/food";
+import { searchFood, Food } from "@/lib/api/food/food";
 import { createClient } from "@supabase/supabase-js";
 import { User } from "@supabase/supabase-js";
 
