@@ -23,6 +23,18 @@ export default function SignIn() {
     }
     router.push("/homepage")
   }
+  const signInWithProvider = async (provider: 'google' | 'facebook') => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    setErrorMsg(`Error signing in with ${provider}: ${error.message}`);
+  }
+};
   return (
     <div className="min-h-screen flex">
       {/* Left Side*/}
@@ -110,24 +122,32 @@ export default function SignIn() {
           </div>
 
           {/* Google & Facebook */}
-
           <div className="grid grid-cols-2 gap-4">
-            <Link href="/api/auth/google">
-              <button className=" w-50 flex items-center justify-center text-black gap-3 border border-gray-300 hover:border-gray-400 hover:cursor-pointer rounded-2xl py-4 transition-colors">
-                <Image
-                  src="/images/branding/googleIcon.jpg"
-                  alt='Sign In with gmail' width={30} height={30} />
-                <span className="font-bold text-2xl">Gmail</span>
-              </button>
-            </Link >
-            <Link href="/api/auth/facebook">
-              <button className=" w-50 flex items-center justify-center text-black gap-3 border border-gray-300 hover:border-gray-400 hover:cursor-pointer rounded-2xl py-4 transition-colors">
-                <Image
-                  src="/images/branding/facebookIcon.png"
-                  alt='Sign In with facebook' width={40} height={40} />
-                <span className="font-bold text-2xl">Facebook</span>
-              </button>
-            </Link>
+            <button
+              onClick={() => signInWithProvider('google')}
+              className="w-full flex items-center justify-center text-black gap-3 border border-gray-300 hover:border-gray-400 hover:cursor-pointer rounded-2xl py-4 transition-colors"
+            >
+              <Image
+                src="/images/branding/googleIcon.jpg"
+                alt="Sign in with Google"
+                width={30}
+                height={30}
+              />
+              <span className="font-bold text-2xl">Gmail</span>
+            </button>
+
+            <button
+              onClick={() => signInWithProvider('facebook')}
+              className="w-full flex items-center justify-center text-black gap-3 border border-gray-300 hover:border-gray-400 hover:cursor-pointer rounded-2xl py-4 transition-colors"
+            >
+              <Image
+                src="/images/branding/facebookIcon.png"
+                alt="Sign in with Facebook"
+                width={40}
+                height={40}
+              />
+              <span className="font-bold text-2xl">Facebook</span>
+            </button>
           </div>
 
           <div className="mt-8 text-center">
