@@ -9,15 +9,6 @@ import { format, addDays } from 'date-fns';
 import { supabase } from '../utils/supabase';
 import ShareCard from '@/components/shareCard';
 
-//fetch loged in user
-const [user,setUser] = useState<any>(null);
-useEffect(() => {
-    const loadUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-    };
-    loadUser();
-}, []);
 
 
 type Cardio = {
@@ -36,6 +27,7 @@ type Strength = {
 }
 
 export default function WorkOut() {
+  const [user, setUser] = useState<any>(null); 
   const [cardioExercises, setCardioExercises] = useState<Cardio[]>([]);
   const [strengthExercises, setStrengthExercises] = useState<Strength[]>([]);
   const [isAddCar, setAddCar] = useState<boolean>(false);
@@ -47,6 +39,16 @@ export default function WorkOut() {
     calories_burned: number;
   } | null>(null);
   const formattedDate = format(currentDate, 'yyyy-MM-dd');
+
+  //fetch loged in user
+    useEffect(() => {
+    const loadUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    };
+    loadUser();
+}, []);
+
   useEffect(() => {
     const fetchGoal = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -271,23 +273,23 @@ export default function WorkOut() {
   }, [formattedDate, getToken]);
 
   return (
-    <div className="flex min-h-screen bg-black text-white gap-50">
+    <div className="flex min-h-screen bg-black text-white gap-10">
 
-
-      {/* Add ShareCard for fitness summary */}
-      {renderCardioSection('Cardiovascular', cardioExercises)}
-      {renderStrengthSection('Strength', strengthExercises)}
-      {user &&( 
-      <ShareCard 
-      cardio={cardioExercises}
-      strength={strengthExercises}
-      user={user} 
-      /> 
-      )}
-  
       <div className="w-64 sticky top-0 h-screen flex flex-col justify-between">
         <Sidebar />
       </div>
+
+      <div className="mt-auto flex flex-col gap-6 pt-10">
+        {/* Add ShareCard for fitness summary */}
+        {user &&( 
+        <ShareCard 
+        cardio={cardioExercises}
+        strength={strengthExercises}
+        user={user} 
+        /> 
+        )}
+      </div>
+  
 
       <div className="flex-1 flex flex-col gap-6">
         <div className="flex-1 text-white p-6 space-y-8">
@@ -323,6 +325,7 @@ export default function WorkOut() {
                   }}
                   className="absolute top-20 bg-white text-black p-2 rounded"
                 />
+                
               )}
             </div>
           </div>

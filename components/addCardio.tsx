@@ -1,3 +1,4 @@
+"use client"
 import { useState } from "react"
 import { Cardio } from "@/lib/api/exercise/exercise";
 import { supabase } from "@/app/utils/supabase";
