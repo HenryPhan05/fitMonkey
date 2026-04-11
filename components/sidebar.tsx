@@ -17,7 +17,7 @@ export default function Sidebar() {
   const router = useRouter();
 
   return (
-    <div className="w-100 h-screen bg-zinc-900  text-white flex flex-col justify-between p-6">
+    <div className="w-full h-screen bg-zinc-900  text-white flex flex-col justify-between p-6">
       <div>
         <h1 className="text-3xl font-bold mb-10" style={{ color: "#FFCC00" }}>
           fitMONKEY
