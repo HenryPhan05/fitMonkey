@@ -9,7 +9,6 @@ export default function FriendsSidebar({ user }: { user: any }) {
   const [emailInput, setEmailInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 1. Load Friends (Your original logic)
   useEffect(() => {
     if (!user?.id) return;
     const loadFriends = async () => {
@@ -31,7 +30,7 @@ export default function FriendsSidebar({ user }: { user: any }) {
     loadFriends();
   }, [user?.id]);
 
-  // 2. Simple Add by Email Function
+//email
   const handleAddFriend = async () => {
     if (!emailInput.trim()) return;
     setLoading(true);
@@ -57,7 +56,7 @@ export default function FriendsSidebar({ user }: { user: any }) {
     }
   };
 
-  // 3. Simple Invite Link
+  //invite link
   const copyInvite = () => {
     navigator.clipboard.writeText(window.location.origin + "/social");
     alert("Link copied! Send it to your friends.");

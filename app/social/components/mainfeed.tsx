@@ -15,11 +15,10 @@ export default function MainFeed({ user }: MainFeedProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Reference and Query
     const postsCollection = collection(db, "posts");
     const q = query(postsCollection, orderBy("timestamp", "desc"));
 
-    // 2. Real-time Listener
+   
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -37,7 +36,6 @@ export default function MainFeed({ user }: MainFeedProps) {
       }
     );
 
-    // 3. Clean up the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
