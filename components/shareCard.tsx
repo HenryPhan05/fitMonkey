@@ -29,10 +29,10 @@ export default function ShareCard({ cardio, strength, user }: ShareCardProps) {
     
     // text version
     const statsText = `
-🔥 WORKOUT SUMMARY: 
-⏱️ Time: ${totalMinutes} mins
-🏃 Calories Burned: ${totalCalories} kcal
-💪 Exercises: cardio + strength ; 
+    WORKOUT SUMMARY: 
+    Time: ${totalMinutes} mins
+    Calories Burned: ${totalCalories} kcal
+    Exercises: cardio + strength ; 
     `.trim(); 
 
     try {
