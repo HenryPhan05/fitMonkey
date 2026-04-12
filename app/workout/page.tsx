@@ -279,17 +279,6 @@ export default function WorkOut() {
         <Sidebar />
       </div>
 
-      <div className="mt-auto flex flex-col gap-6 pt-10">
-        {/* Add ShareCard for fitness summary */}
-        {user &&( 
-        <ShareCard 
-        cardio={cardioExercises}
-        strength={strengthExercises}
-        user={user} 
-        /> 
-        )}
-      </div>
-  
 
       <div className="flex-1 flex flex-col gap-6">
         <div className="flex-1 text-white p-6 space-y-8">
@@ -332,6 +321,17 @@ export default function WorkOut() {
 
           {renderCardioSection('Cardiovascular', cardioExercises)}
           {renderStrengthSection('Strength', strengthExercises)}
+
+          <div className="mt-12 pt-8 border-t border-zinc-800 flex justify-center">
+        {/* ShareCard for fitness summary */}
+        {user &&( 
+        <ShareCard 
+        cardio={cardioExercises}
+        strength={strengthExercises}
+        user={user} 
+        /> 
+        )}
+      </div>
         </div>
       </div>
 
@@ -356,6 +356,8 @@ export default function WorkOut() {
             />
             : ""}
       </div>
+
+      
     </div>
   )
 }

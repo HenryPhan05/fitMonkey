@@ -1,101 +1,155 @@
-"use client"; // <--- ADD THIS AT THE VERY TOP
+"use client";
 
-import { useEffect, useState } from "react";
-import { db } from "../_utils/firebase";
-import { collection, addDoc, orderBy, query, onSnapshot } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { db } from "@/app/social/_utils/firebase";
+import { 
+  doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, 
+  collection, addDoc, onSnapshot, query, orderBy, serverTimestamp 
+} from "firebase/firestore";
+import { Trash2, Heart, MessageCircle, Send } from "lucide-react";
 
-type Post = {
-    id: string;
-    content: string;
-    timestamp: {
-        seconds: number;
-    };
-    imageUrl?: string;
-    userId?: string;
-};
+interface PostCardProps {
+  post: any;
+  user: any;
+}
 
-export default function PostCard({ post, user }: { post: Post; user: any }) {
-    const [commentText, setCommentText] = useState("");
-    const [comments, setCommentsList] = useState<any[]>([]);
-    const [showComments, setShowComments] = useState(false);
+export default function PostCard({ post, user }: PostCardProps) {
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<any[]>([]);
+  const [showComments, setShowComments] = useState(false);
 
-    useEffect(() => {
-        if (!showComments || !post.id) return;
+  const myId = user?.uid || user?.id;
+  const isOwner = post.userId === myId;
+  const likedByMe = post.likes?.includes(myId);
 
-        const q = query(collection(db, "posts", post.id, "comments"), orderBy("timestamp", "asc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setCommentsList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
+  //Sync comments from Firebase
+  useEffect(() => {
+    if (!post.id) return;
+    const q = query(collection(db, "posts", post.id, "comments"), orderBy("timestamp", "asc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setComments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, [post.id]);
 
-        return () => unsubscribe();
-    }, [post.id, showComments]);
+  const handleToggleLike = async () => {
+    if (!myId) return alert("Please sign in to like posts!");
+    const postRef = doc(db, "posts", post.id);
+    await updateDoc(postRef, {
+      likes: likedByMe ? arrayRemove(myId) : arrayUnion(myId)
+    });
+  };
 
-    const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        
-        // Safety check for user and text
-        if (!user || commentText.trim() === "") {
-            alert("You must be logged in to comment!");
-            return;
-        }
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !myId) return;
+    
+    await addDoc(collection(db, "posts", post.id, "comments"), {
+      text: commentText,
+      userName: user.user_metadata?.full_name || user.email?.split('@')[0] || "User",
+      userId: myId,
+      timestamp: serverTimestamp(),
+    });
+    setCommentText("");
+  };
 
-        try {
-            await addDoc(collection(db, "posts", post.id, "comments"), {
-                content: commentText,
-                timestamp: new Date(),
-                userId: user.uid || user.id // Supabase uses .id, Firebase uses .uid
-            });
-            setCommentText("");
-        } catch (err) {
-            console.error("Error adding comment: ", err);
-        }
-    };
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      await deleteDoc(doc(db, "posts", post.id));
+    }
+  };
 
-    return (
-        <div className="bg-[#1a1a1a] p-4 rounded-lg mb-4 text-white">
-            <p className="text-white">{post.content}</p>
-            <p className="text-gray-500 text-sm mt-2">
-                {post.timestamp?.seconds ? new Date(post.timestamp.seconds * 1000).toLocaleString() : "Just now"}
+  return (
+    <div className="bg-[#121212] border border-zinc-800 rounded-3xl p-5 mb-6 shadow-xl">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
+            <img 
+              src={(post.avatar_url && post.avatar_url !== "") ? post.avatar_url : "/images/default-avatar.jpg"} 
+              className="w-full h-full object-cover" 
+              alt="Profile" 
+            />
+          </div>
+          <div>
+            <p className="font-bold text-white text-sm">
+              {post.displayName || post.userName || "Athlete"}
             </p>
-            {post.imageUrl && (
-                <img src={post.imageUrl} alt="Post Image" className="mt-4 rounded w-full object-cover" />
-            )}
-            
-            <div className="flex space-x-4 mt-4 text-gray-500">
-                <span
-                    className="cursor-pointer hover:text-white transition"
-                    onClick={() => setShowComments(!showComments)}
-                > 
-                    {showComments ? "Hide comments" : "Comment"}
-                </span>
-                <span className="cursor-pointer hover:text-white transition">Share</span>
-            </div>  
+            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">
+              {post.timestamp?.toDate ? post.timestamp.toDate().toLocaleDateString() : "Just now"}
+            </p>
+          </div>
+        </div>
+        {isOwner && (
+          <button onClick={handleDelete} className="text-zinc-600 hover:text-red-500 transition-colors p-1">
+            <Trash2 size={18} />
+          </button>
+        )}
+      </div>
 
-            {showComments && (
-                <div className="mt-4 border-t border-zinc-800 pt-4">
-                    <div className="space-y-2 mb-4">
-                        {comments.map((c) => (
-                            <div key={c.id} className="text-gray-300 text-sm bg-[#2a2a2a] p-2 rounded">
-                                {c.content}
-                            </div>
-                        ))}
-                    </div>
-                    <form onSubmit={handleCommentSubmit} className="flex">
-                        <input
-                            className="flex-1 bg-[#333] text-white p-2 rounded-l outline-none border border-transparent focus:border-yellow-400"
-                            placeholder="Write a comment..."
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                        />
-                        <button
-                            type="submit"
-                            className="bg-yellow-400 text-black px-4 rounded-r font-semibold hover:bg-yellow-500 transition"
-                        >
-                            Post
-                        </button>
-                    </form>
-                </div>
-            )}
-        </div> 
-    );
+      {/* Workout Image*/}
+      {post.imageUrl && post.imageUrl.trim() !== "" ? (
+        <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-black mb-4">
+          <img 
+            src={post.imageUrl} 
+            className="w-full h-auto object-cover" 
+            alt="Workout Summary" 
+          />
+        </div>
+      ) : null}
+
+      
+
+      {/*Post Text */}
+      <p className="text-zinc-300 text-sm mb-4 px-1 leading-relaxed">
+        {post.content}
+      </p>
+      {/*Interaction Bar */}
+      <div className="flex items-center gap-6 mb-4 px-1">
+        <button 
+          onClick={handleToggleLike} 
+          className={`flex items-center gap-2 transition ${likedByMe ? "text-red-500" : "text-zinc-400 hover:text-white"}`}
+        >
+          <Heart size={20} fill={likedByMe ? "currentColor" : "none"} />
+          <span className="text-sm font-bold">{post.likes?.length || 0}</span>
+        </button>
+        
+        <button 
+          onClick={() => setShowComments(!showComments)} 
+          className="flex items-center gap-2 text-zinc-400 hover:text-white transition"
+        >
+          <MessageCircle size={20} />
+          <span className="text-sm font-bold">{comments.length}</span>
+        </button>
+      </div>
+
+      {/*comments*/}
+      {showComments && (
+        <div className="border-t border-zinc-800 pt-4 mt-4 space-y-3">
+          <div className="max-h-40 overflow-y-auto space-y-2 mb-4 scrollbar-hide">
+            {comments.map((c) => (
+              <div key={c.id} className="text-[11px] bg-zinc-900/40 p-2 rounded-lg border border-zinc-800/50">
+                <span className="font-bold text-white mr-2">{c.userName}:</span>
+                <span className="text-zinc-400">{c.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleAddComment} className="flex gap-2">
+            <input 
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-yellow-400 transition"
+            />
+            <button 
+              type="submit" 
+              className="bg-yellow-400 text-black p-2 rounded-xl hover:bg-yellow-500 transition-all active:scale-95 shadow-lg shadow-yellow-400/10"
+            >
+              <Send size={14} />
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
 }
