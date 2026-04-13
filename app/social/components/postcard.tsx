@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/app/social/_utils/firebase";
-import { 
-  doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, 
-  collection, addDoc, onSnapshot, query, orderBy, serverTimestamp 
+import {
+  doc, deleteDoc, updateDoc, arrayUnion, arrayRemove,
+  collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
 } from "firebase/firestore";
 import { Trash2, Heart, MessageCircle, Send } from "lucide-react";
 
@@ -43,7 +43,7 @@ export default function PostCard({ post, user }: PostCardProps) {
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim() || !myId) return;
-    
+
     await addDoc(collection(db, "posts", post.id, "comments"), {
       text: commentText,
       userName: user.user_metadata?.full_name || user.email?.split('@')[0] || "User",
@@ -64,10 +64,10 @@ export default function PostCard({ post, user }: PostCardProps) {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
-            <img 
-              src={(post.avatar_url && post.avatar_url !== "") ? post.avatar_url : "/images/default-avatar.jpg"} 
-              className="w-full h-full object-cover" 
-              alt="Profile" 
+            <img
+              src={(post.avatar_url && post.avatar_url !== "") ? post.avatar_url : "/images/default-avatar.jpg"}
+              className="w-full h-full object-cover"
+              alt="Profile"
             />
           </div>
           <div>
@@ -86,18 +86,20 @@ export default function PostCard({ post, user }: PostCardProps) {
         )}
       </div>
 
-      {/* Workout Image*/}
-      {post.imageUrl && post.imageUrl.trim() !== "" ? (
-        <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-black mb-4">
-          <img 
-            src={post.imageUrl} 
-            className="w-full h-auto object-cover" 
-            alt="Workout Summary" 
-          />
+      {/* uploaded image */}
+      {(post.imageUrl || post.postImage) ? (
+        <div className="flex justify-center mb-4">
+          <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-black w-full max-w-75 max-h-50 flex items-center justify-center p-4">
+            <img
+              src={post.postImage || post.imageUrl}
+              className="w-full h-full object-contain"
+              alt="Workout Summary"
+            />
+          </div>
         </div>
       ) : null}
 
-      
+
 
       {/*Post Text */}
       <p className="text-zinc-300 text-sm mb-4 px-1 leading-relaxed">
@@ -105,16 +107,16 @@ export default function PostCard({ post, user }: PostCardProps) {
       </p>
       {/*Interaction Bar */}
       <div className="flex items-center gap-6 mb-4 px-1">
-        <button 
-          onClick={handleToggleLike} 
+        <button
+          onClick={handleToggleLike}
           className={`flex items-center gap-2 transition ${likedByMe ? "text-red-500" : "text-zinc-400 hover:text-white"}`}
         >
           <Heart size={20} fill={likedByMe ? "currentColor" : "none"} />
           <span className="text-sm font-bold">{post.likes?.length || 0}</span>
         </button>
-        
-        <button 
-          onClick={() => setShowComments(!showComments)} 
+
+        <button
+          onClick={() => setShowComments(!showComments)}
           className="flex items-center gap-2 text-zinc-400 hover:text-white transition"
         >
           <MessageCircle size={20} />
@@ -135,14 +137,14 @@ export default function PostCard({ post, user }: PostCardProps) {
           </div>
 
           <form onSubmit={handleAddComment} className="flex gap-2">
-            <input 
+            <input
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Write a comment..."
               className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-yellow-400 transition"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-yellow-400 text-black p-2 rounded-xl hover:bg-yellow-500 transition-all active:scale-95 shadow-lg shadow-yellow-400/10"
             >
               <Send size={14} />
