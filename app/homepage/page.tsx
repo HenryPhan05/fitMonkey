@@ -266,14 +266,14 @@ export default function Homepage() {
   const workoutEnd = workoutStart + workoutAngle; // remainder
 
   return (
-    <div className="flex min-screen bg-black text-white gap-50">
+    <div className="flex min-h-screen bg-black text-white">
       {/* LEFT: Sidebar */}
-      <aside className="w-64 h-screen sticky top-0 border-r border-zinc-800">
+      <aside className="w-64 sticky top-0 h-screen flex flex-col justify-between">
         <Sidebar />
       </aside>
 
       {/* MIDDLE: Main Content */}
-      <div className="flex-1 flex flex-col gap-6">
+      <div className="flex-1 max-w-4xl mx-auto p-6 flex flex-col gap-6">
         <h1 className="text-yellow-400 font-bold mb-4 text-xl">
           <span
             onClick={() => handleStreakClick()}
