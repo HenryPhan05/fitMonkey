@@ -22,7 +22,7 @@ export default function Sidebar() {
         <h1 className="text-3xl font-bold mb-10" style={{ color: "#FFCC00" }}>
           fitMONKEY
         </h1>
-
+        
         <nav className="space-y-4">
           {menuItems.map((item) => (
             <div
