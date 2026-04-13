@@ -1,107 +1,166 @@
 'use client';
-
+ 
 import React, { useRef, useState } from 'react';
 import * as htmlToImage from 'html-to-image';
-import { db, storage } from '@/app/social/_utils/firebase'; 
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { db } from '@/app/social/_utils/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Share2, Loader2 } from 'lucide-react';
-
+import { Share2, Loader2, Download, Timer, Flame, Send } from 'lucide-react';
+ 
 interface ShareCardProps {
   cardio: any[];
   strength: any[];
   user: any;
 }
-
+ 
 export default function ShareCard({ cardio, strength, user }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
-
-  // Calculate Total
+ 
   const totalMinutes = cardio.reduce((acc, curr) => acc + curr.minutes, 0);
   const totalCalories = cardio.reduce((acc, curr) => acc + curr.caloriesBurned, 0);
-
-  const handleShare = async () => {
-    if (!user) return;
+ 
+  const handleAction = async (type: 'post' | 'download' | 'share') => {
+    if (!user || !cardRef.current) return;
     setLoading(true);
-
-    let finalImageUrl = "";
-    
-    // text version
-    const statsText = `
-    WORKOUT SUMMARY: 
-    Time: ${totalMinutes} mins
-    Calories Burned: ${totalCalories} kcal
-    Exercises: cardio + strength ; 
-    `.trim(); 
-
+ 
     try {
-      //TRY to generate and upload the image
-      // if (cardRef.current) {
-      //   try {
-      //     const dataUrl = await htmlToImage.toPng(cardRef.current, { cacheBust: true });
-      //     const storageRef = ref(storage, `shares/${user.id}-${Date.now()}.png`);
-      //     await uploadString(storageRef, dataUrl, 'data_url');
-      //     finalImageUrl = await getDownloadURL(storageRef);
-      //   } catch (imageErr) {
-      //     console.warn("Image generation failed, falling back to text-only.", imageErr);
-      //     //finalImageUrl stay empty ("")
-      //   }
-      // }
-
-      // 3. POST to Firestore
-      await addDoc(collection(db, "posts"), {
-        userId: user.id,
-        displayName: user.user_metadata?.full_name || user.email.split('@')[0],
-        avatar_url: user.user_metadata?.avatar_url || "/images/default-avatar.jpg",
-        content: statsText,
-        imageUrl: finalImageUrl, // If image failed""
-        likes: [],
-        timestamp: serverTimestamp(),
+      const statsText = `Just finished my workout! 💪 ${totalMinutes} mins | ${totalCalories} kcal.`;
+ 
+      //image
+      const dataUrl = await htmlToImage.toPng(cardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#000'
       });
-
-      alert(finalImageUrl ? "Shared with image!" : "Shared stats (text-only)!");
+ 
+      // to social feed
+      if (type === 'post') {
+        await addDoc(collection(db, "posts"), {
+          userId: user.id,
+          // Handling both Supabase and custom user objects
+          displayName: user.user_metadata?.full_name || (user.first_name ? `${user.first_name} ${user.last_name}` : user.email?.split('@')[0]),
+          avatar_url: user.user_metadata?.avatar_url || user.avatar_url || "/images/default-avatar.jpg",
+          content: statsText,
+          postImage: dataUrl, // Store the image as a Base64 string in Firestore
+          likes: [],
+          timestamp: serverTimestamp(),
+        });
+        alert("Successfully posted to your Social Feed!");
+      }
+ 
+      // downlaod
+      if (type === 'download') {
+        const link = document.createElement('a');
+        link.download = `workout-summary-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+     
+      //share
+      if (type === 'share') {
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], 'my-workout.png', { type: 'image/png' });
+ 
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'My Gym Progress',
+            text: statsText,
+          });
+        } else {
+          const link = document.createElement('a');
+          link.download = `workout-to-share.png`;
+          link.href = dataUrl;
+          link.click();
+          alert("Native sharing not supported. Image downloaded instead!");
+        }
+      }
+ 
     } catch (err) {
-      console.error("Critical Share Error:", err);
-      alert("Could not share workout.");
+      console.error("Action Error:", err);
+      alert("Something went wrong. Check your connection.");
     } finally {
       setLoading(false);
     }
   };
-
+ 
   return (
-    <div className="flex flex-col items-center bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 shadow-2xl">
-      {/* card */}
-      <div 
-        ref={cardRef} 
-        className="bg-black border-2 border-yellow-400 p-6 rounded-2xl w-64 mb-4"
+    <div className="flex flex-col items-center bg-zinc-900/40 p-6 rounded-[2.5rem] border border-zinc-800 shadow-2xl w-full max-w-md backdrop-blur-sm">
+     
+      {/* image */}
+      <div
+        ref={cardRef}
+        className="bg-black p-8 rounded-4xl w-full mb-8 border-4 border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.15)]"
       >
-        <h3 className="text-yellow-400 font-black italic uppercase text-lg mb-4">Daily Report</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between border-b border-zinc-800 pb-1">
-            <span className="text-zinc-500 text-xs uppercase font-bold">Minutes</span>
-            <span className="text-white font-bold">{totalMinutes}</span>
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-2">
+            <h3 className="text-yellow-400 font-black text-xl tracking-tighter">fitMONKEY</h3>
           </div>
-          <div className="flex justify-between border-b border-zinc-800 pb-1">
-            <span className="text-zinc-500 text-xs uppercase font-bold">Calories Burned</span>
-            <span className="text-white font-bold">{totalCalories}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500 text-xs uppercase font-bold">Exercises</span>
-            <span className="text-white font-bold">{cardio.length + strength.length}</span>
+          <div className="text-right">
+             <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest">My Workout</p>
+             <p className="text-white text-[10px] font-bold">{new Date().toLocaleDateString()}</p>
           </div>
         </div>
+ 
+        <div className="grid grid-cols-1 gap-4 mb-8">
+          <div className="flex items-center justify-between p-5 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+            <div className="flex flex-col">
+              <span className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">Duration</span>
+              <span className="text-white text-4xl font-black leading-none">{totalMinutes}<span className="text-yellow-400 text-lg ml-1">MIN</span></span>
+            </div>
+            <Timer className="text-zinc-700" size={32} />
+          </div>
+         
+          <div className="flex items-center justify-between p-5 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+            <div className="flex flex-col">
+              <span className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">Energy Burned</span>
+              <span className="text-white text-4xl font-black leading-none">{totalCalories}<span className="text-yellow-400 text-lg ml-1">KCAL</span></span>
+            </div>
+            <Flame className="text-zinc-700" size={32} />
+          </div>
+        </div>
+ 
+        <div className="flex justify-around py-4 border-t border-zinc-900">
+           <div className="text-center">
+              <p className="text-white font-black text-2xl leading-none">{strength.length}</p>
+              <p className="text-zinc-500 text-[9px] uppercase font-bold mt-1">Strength</p>
+           </div>
+           <div className="w-px bg-zinc-800" />
+           <div className="text-center">
+              <p className="text-white font-black text-2xl leading-none">{cardio.length}</p>
+              <p className="text-zinc-500 text-[9px] uppercase font-bold mt-1">Cardio</p>
+           </div>
+        </div>
       </div>
-
-      {/* SHARE BUTTON */}
-      <button
-        onClick={handleShare}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-yellow-400 text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-500 transition active:scale-95 disabled:opacity-50"
-      >
-        {loading ? <Loader2 className="animate-spin" size={18} /> : <Share2 size={18} />}
-        {loading ? "Processing..." : "Share Stats"}
-      </button>
+ 
+      {/* ACTION BUTTONS */}
+      <div className="w-full space-y-3">
+        <button
+          onClick={() => handleAction('share')}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 bg-yellow-400 text-black py-4 rounded-2xl font-black uppercase text-sm hover:bg-yellow-500 transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-yellow-400/10"
+        >
+          {loading ? <Loader2 className="animate-spin" size={20} /> : <Share2 size={20} />}
+          Share to Social Media
+        </button>
+ 
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => handleAction('download')}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-zinc-800/80 text-white py-3 rounded-2xl text-xs font-bold hover:bg-zinc-700 transition-colors"
+          >
+            <Download size={14} /> Download
+          </button>
+          <button
+            onClick={() => handleAction('post')}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-zinc-800/80 text-white py-3 rounded-2xl text-xs font-bold hover:bg-zinc-700 transition-colors"
+          >
+            <Send size={14} /> In-App Feed
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
