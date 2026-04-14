@@ -237,7 +237,7 @@ export default function Homepage() {
           setGoalForm(newGoal[0]);
         }
       } else {
-      
+
         setGoal(updatedData[0]);
         setGoalForm(updatedData[0]);
       }
@@ -251,7 +251,8 @@ export default function Homepage() {
   if (!user) return <div className="p-10 text-xl  text-yellow-500">Loading...</div>;
   const baseGoal = goal?.calories ?? 2000;
   const total = baseGoal + food + workout;
-
+  const remaining = baseGoal - food + workout;
+  const isDone = remaining <= 0;
   const baseGoalAngle = Math.round(((goal?.calories || 2000) / total) * 360 * 10) / 10;
   const foodAngle = Math.round((food / total) * 360 * 10) / 10;
   const workoutAngle = Math.round((workout / total) * 360 * 10) / 10;
@@ -309,17 +310,21 @@ export default function Homepage() {
             <div
               className="absolute w-full h-full rounded-full leading-none"
               style={{
-                background: `conic-gradient(
-                               #9ca3af ${baseGoalStart}deg ${baseGoalEnd}deg,
-                                #f59e0b ${foodStart}deg ${foodEnd}deg,
-                                #3b82f6 ${workoutStart}deg ${workoutEnd}deg
-                                          )`
+                background: isDone
+                  ? `conic-gradient(#22c55e 0deg 360deg)`
+                  : `conic-gradient(
+        #9ca3af ${baseGoalStart}deg ${baseGoalEnd}deg,
+        #f59e0b ${foodStart}deg ${foodEnd}deg,
+        #3b82f6 ${workoutStart}deg ${workoutEnd}deg
+      )`
               }}
             ></div>
 
             {/* Inner circle (white/black background to make it look like a donut) */}
             <div className="w-24 h-24 bg-black rounded-full flex flex-col items-center justify-center z-10">
-              <p className="text-3xl font-bold leading-none">{baseGoal + food - workout}</p>
+              <p className="text-3xl font-bold leading-none">
+                {isDone ? "Done" : remaining}
+              </p>
               <p className="text-xm text-gray-400">Remaining</p>
             </div>
           </div>
@@ -398,7 +403,7 @@ export default function Homepage() {
             />
           </div>
           <Image
-           // src={user?.avatar_url || defaultAvatar}
+            // src={user?.avatar_url || defaultAvatar}
             src={user?.avatar_url || avatar}
             alt="avatar"
             width={100}
